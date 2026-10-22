@@ -143,28 +143,6 @@ void lzw_compress(bitstream_t *stream,
                 lzw_table_reset(table);
             }
 
-#if 0
-            if(newcode >= (1 << table->code_bitsize) - 1)
-            {
-                if(table->code_bitsize == 12)
-                {
-                    bitstream_add(stream, table->initial_code - 2, table->code_bitsize);
-                    lzw_table_reset(table);
-                }
-                else
-                {
-                    table->code_bitsize++;
-                }
-            }
-#endif
-#if 0
-            printf("%5d : %5d : %5d : ", bitsize, code, newcode);
-
-            for(size_t i = 0; i < ptr_size; i++)
-                printf("%d ", ptr[i]);
-            puts("");
-#endif
-
             ptr = ptr + ptr_size - 1;
             ptr_size = 1;
         }
@@ -172,9 +150,6 @@ void lzw_compress(bitstream_t *stream,
 
     code = lzw_table_get(table, ptr, ptr_size);
     bitstream_add(stream, code, table->code_bitsize);
-#if 0
-    printf("%5d : %5d : ----- : \n", table->code_bitsize, code);
-#endif
 
     bitstream_add(stream, table->initial_code - 1, table->code_bitsize);
 

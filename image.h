@@ -7,9 +7,6 @@
 #include "lzw.h"
 #include "bitstream.h"
 
-// 25 fps
-#define FPS_30 3
-
 typedef struct color_t
 {
     uint8_t r;
@@ -36,7 +33,7 @@ typedef struct image_t
     FILE *file;
 } image_t;
 
-void image_create(image_t *image, uint16_t width, uint16_t height);
+void image_create(image_t *image, uint16_t width, uint16_t height, uint16_t delay);
 void image_commit_frame(image_t *image, color_t *frame);
 void image_close(image_t *image);
 

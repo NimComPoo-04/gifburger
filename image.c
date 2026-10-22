@@ -1,27 +1,11 @@
 #include <stdlib.h>
 #include "image.h"
 
-
-// CRY: I am not gonna lie please people make stuff that can debug stuff,
-// how a dumbass supposed to enjoy myself if everything is gonna break because
-// I accidentally switched places of a singular line of code man.
-//
-// min_code was getting set after compression which means there is 0 control over
-// what it came out to be. its supposed to based on the gif palette data. anywho.
-
 // TODO: do some kmeans stuff or something
 void image_palette_gen(image_t *image)
 {
     image->palette_size = 8 * 8 * 4;
     image->palette = calloc(image->palette_size, sizeof(color_t));
-
-#if 0
-
-    image->palette[0] = (color_t){0, 0, 0};
-    image->palette[1] = (color_t){255, 0, 0};
-    image->palette[2] = (color_t){0, 0, 255};
-    image->palette[3] = (color_t){255, 255, 255};
-#endif
 
     for(int i = 0; i < 4; i++)
     {
@@ -40,6 +24,8 @@ void image_palette_gen(image_t *image)
 // TODO: Do something like floyd steinberg dithering or something else
 void image_quantize(image_t *image, color_t *frame)
 {
+#define C(a) ((a) < 0 ? 0 : ((a) > 255 ? 255 : (a)))
+
     for(int i = 0; i < image->height; i++)
     {
         for(int j = 0; j < image->width; j++)
@@ -51,22 +37,52 @@ void image_quantize(image_t *image, color_t *frame)
             uint8_t ig = col.g / 32;
             uint8_t ib = col.b / 64;
 
+            int er = col.r - ir * 32;
+            int eg = col.g - ig * 32;
+            int eb = col.b - ib * 64;
+
+            if(j + 1 < image->width)
+            {
+                frame[where + 1].r = C(frame[where + 1].r + er * 7 / 16);
+                frame[where + 1].g = C(frame[where + 1].g + eg * 7 / 16);
+                frame[where + 1].b = C(frame[where + 1].b + eb * 7 / 16);
+            }
+            
+            if(i + 1 < image->height)
+            {
+                int w = image->width;
+                if(j - 1 < 0)
+                {
+                    frame[where + w - 1].r = C(frame[where + w - 1].r + er * 3 / 16);
+                    frame[where + w - 1].g = C(frame[where + w - 1].g + eg * 3 / 16);
+                    frame[where + w - 1].b = C(frame[where + w - 1].b + eb * 3 / 16);
+                }
+
+                frame[where + w].r = C(frame[where + w].r + er * 5 / 16);
+                frame[where + w].g = C(frame[where + w].g + eg * 5 / 16);
+                frame[where + w].b = C(frame[where + w].b + eb * 5 / 16);
+
+                if(j + 1 < image->width)
+                {
+                    frame[where + w + 1].r = C(frame[where + w + 1].r + er * 1 / 16);
+                    frame[where + w + 1].g = C(frame[where + w + 1].g + eg * 1 / 16);
+                    frame[where + w + 1].b = C(frame[where + w + 1].b + eb * 1 / 16);
+                }
+            }
+
             uint8_t color_indx = ib * 8 * 8 + ig * 8 + ir;
             image->quantized_frame[where] = color_indx;
-#if 0
-            image->quantized_frame[where] = col.r;
-#endif
         }
     }
 }
 
-void image_create(image_t *image, uint16_t width, uint16_t height)
+void image_create(image_t *image, uint16_t width, uint16_t height, uint16_t delay)
 {
     image->width = width;
     image->height = height;
     image_palette_gen(image);
     image->frames_processed = 0;
-    image->delaytime = FPS_30;
+    image->delaytime = delay;
     image->quantized_frame = calloc(width * height, sizeof(uint8_t));
     lzw_table_init(&image->lzw, 258);
     image->file = fopen("test.gif", "wb");
