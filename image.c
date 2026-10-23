@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <assert.h>
 #include "image.h"
 
 // TODO: do some kmeans stuff or something
@@ -76,7 +77,9 @@ void image_quantize(image_t *image, color_t *frame)
     }
 }
 
-void image_create(image_t *image, uint16_t width, uint16_t height, uint16_t delay)
+void image_create(image_t *image,
+        uint16_t width, uint16_t height,
+        uint16_t delay, const char *filename)
 {
     image->width = width;
     image->height = height;
@@ -85,8 +88,8 @@ void image_create(image_t *image, uint16_t width, uint16_t height, uint16_t dela
     image->delaytime = delay;
     image->quantized_frame = calloc(width * height, sizeof(uint8_t));
     lzw_table_init(&image->lzw, 258);
-    image->file = fopen("test.gif", "wb");
-
+    image->file = fopen(filename, "wb+");
+    assert(image->file);
 
     const char header[] = "GIF89a";
     fwrite(header, sizeof(header) - 1, 1, image->file);
@@ -163,7 +166,7 @@ void image_commit_frame(image_t *image, color_t *frame)
     lzw_compress(&image->stream, &image->lzw,
             image->quantized_frame, image->width * image->height);
 
-    printf("LZW Bit Size: %d Min Code Size: %d\n", image->lzw.code_bitsize, min_code_size);
+    //printf("LZW Bit Size: %d Min Code Size: %d\n", image->lzw.code_bitsize, min_code_size);
 
     // Just use the info available lol
     fwrite(&min_code_size, sizeof(uint8_t), 1, image->file);

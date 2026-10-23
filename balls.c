@@ -158,7 +158,7 @@ int main(int argc, char **argv)
     srand(69420);
 
     image_t image = {};
-    image_create(&image, width, height, (100 / FPS));
+    image_create(&image, width, height, (100 / FPS), "test.gif");
 
     for(int i = 0; i < FPS * 3; i++)
     {

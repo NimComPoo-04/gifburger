@@ -33,7 +33,9 @@ typedef struct image_t
     FILE *file;
 } image_t;
 
-void image_create(image_t *image, uint16_t width, uint16_t height, uint16_t delay);
+void image_create(image_t *image,
+        uint16_t width, uint16_t height,
+        uint16_t delay, const char *filename);
 void image_commit_frame(image_t *image, color_t *frame);
 void image_close(image_t *image);
 
