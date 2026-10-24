@@ -166,6 +166,7 @@ void image_commit_frame(image_t *image, color_t *frame)
     lzw_compress(&image->stream, &image->lzw,
             image->quantized_frame, image->width * image->height);
 
+
     //printf("LZW Bit Size: %d Min Code Size: %d\n", image->lzw.code_bitsize, min_code_size);
 
     // Just use the info available lol
